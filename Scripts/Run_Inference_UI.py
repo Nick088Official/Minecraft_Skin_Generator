@@ -35,29 +35,49 @@ if __name__ == "__main__":
 MAX_SEED = np.iinfo(np.int32).max
 
 
-def run_inference(prompt, stable_diffusion_model, num_inference_steps, guidance_scale, model_precision_type, seed, filename, verbose, see_in_3d):
+def run_inference(prompt, stable_diffusion_model, num_inference_steps, guidance_scale, model_precision_type, seed, filename, see_in_3d, verbose):
 
-    # inference
+    # Determine which Stable Diffusion model to use
     if stable_diffusion_model == '2':
         sd_model = "minecraft-skins"
     else:
         sd_model = "minecraft-skins-sdxl"
 
-    inference_command = f"python Scripts/{sd_model}.py '{prompt}' {num_inference_steps} {guidance_scale} {model_precision_type} {seed} {filename} {'--verbose' if verbose else ''}"
-    
-    os.system(inference_command)
+    # Build the command as a list of arguments
+    inference_command_args = [
+        "python",
+        f"Scripts/{sd_model}.py",
+        prompt,
+        str(num_inference_steps),
+        str(guidance_scale),
+        model_precision_type,
+        str(seed),
+        filename
+    ]
 
-    # view it in 3d or not
+    if verbose:
+        inference_command_args.append('--verbose')
+
+    # Run the command using subprocess with 'check=True' to raise an error if the script fails
+    subprocess.run(inference_command_args, check=True)
+
+
+    # Generate and return the 3D model if requested
     if see_in_3d:
-        from pygltflib import GLTF2
-        from pygltflib.utils import ImageFormat, Texture, Material, Image as GLTFImage
-        os.chdir("Scripts")
-        command_3d_model = f"python to_3d_model.py '{filename}'"
-        os.system(command_3d_model)
-        os.chdir("..")
+        command_3d_model_args = [
+            "python",
+            "to_3d_model.py",
+            filename
+        ]
+        
+        # Run the command from within the "Scripts" directory
+        subprocess.run(command_3d_model_args, check=True, cwd="Scripts")
+        
         glb_path = os.path.join(f"output_minecraft_skins/{filename}_3d_model.glb")
+        # Return path to the 2D image and the 3D model
         return os.path.join(f"output_minecraft_skins/{filename}"), glb_path
     else:
+        # Return path to the 2D image and None for the 3D model
         return os.path.join(f"output_minecraft_skins/{filename}"), None
 
 
