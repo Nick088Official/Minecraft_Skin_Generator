@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 import gradio as gr
 import torch
 import numpy as np
@@ -45,7 +46,7 @@ def run_inference(prompt, stable_diffusion_model, num_inference_steps, guidance_
 
     # Build the command as a list of arguments
     inference_command_args = [
-        "python",
+        sys.executable,
         f"Scripts/{sd_model}.py",
         prompt,
         str(num_inference_steps),
@@ -65,7 +66,7 @@ def run_inference(prompt, stable_diffusion_model, num_inference_steps, guidance_
     # Generate and return the 3D model if requested
     if see_in_3d:
         command_3d_model_args = [
-            "python",
+            sys.executable,
             "to_3d_model.py",
             filename
         ]
